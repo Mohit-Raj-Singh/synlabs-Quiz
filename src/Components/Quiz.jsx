@@ -50,7 +50,7 @@ const Quiz = () => {
   };
 
   const calculatePercentage = () => {
-    return (score / questions.length) * 100;
+    return ((currentQuestion / questions.length) * 100);
   };
 
   return (
