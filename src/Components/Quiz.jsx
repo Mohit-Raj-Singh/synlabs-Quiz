@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./Quiz.css";
 import axios from "axios";
 import { Stars } from "./Stars";
 import Loader from "./Loader";
-
 
 const Quiz = () => {
   const [questions, setQuestions] = useState([]);
@@ -12,9 +11,11 @@ const Quiz = () => {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [complete, setComplete] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           "https://synlabs-server.onrender.com/ques"
@@ -24,6 +25,8 @@ const Quiz = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -31,10 +34,10 @@ const Quiz = () => {
     console.log(questions);
   }, []);
 
+
   const handleAnswerClick = (answer) => {
     if (!showResult) {
       setSelectedAnswer(answer);
-
       if (answer === questions[currentQuestion].correct_answer) {
         setScore((prevScore) => prevScore + 1);
       }
@@ -49,9 +52,27 @@ const Quiz = () => {
     setCurrentQuestion((prevQuestion) => prevQuestion + 1);
   };
 
-  const calculatePercentage = () => {
-    return ((currentQuestion / questions.length) * 100);
-  };
+
+  const shuffledAnswers = useMemo(() => {
+    return questions && questions.length
+      ? [
+          questions[currentQuestion].correct_answer,
+          ...questions[currentQuestion].incorrect_answers,
+        ].sort(() => Math.random() - 0.5)
+      : [];
+  }, [questions]);
+
+
+
+  if (currentQuestion === questions.length) {
+    return (
+      <div>
+        <h1>Quiz</h1>
+        <p>Thank you for completing the quiz!</p>
+        <button onClick={() => setCurrentQuestion(0)}>Start Again</button>
+      </div>
+    );
+  }
 
   return (
     <div className="quiz-container">
@@ -68,16 +89,16 @@ const Quiz = () => {
               }}
             />
             <div className="question-number">
-              {currentQuestion + 1}/{questions.length}
+              {/* {currentQuestion + 1}/{questions.length} */}
             </div>
-            <div className="score">{calculatePercentage()}%</div>
+            {/* <div className="score">{calculatePercentage()}%</div> */}
           </div>
           {showResult ? (
             <div className="result">
               {selectedAnswer === questions[currentQuestion].correct_answer ? (
                 <p>Correct!</p>
               ) : (
-                <p>Sorry. Please try again.</p>
+                <p>Sorry, Please try again.</p>
               )}
               <button onClick={handleNextQuestion}>Next Question</button>
             </div>
@@ -99,24 +120,11 @@ const Quiz = () => {
               </div>
 
               <div className="choices">
-                {questions[currentQuestion].incorrect_answers.map((answer) => (
-                  <button
-                    key={answer}
-                    onClick={() => handleAnswerClick(answer)}
-                  >
+                {shuffledAnswers.map((answer, index) => (
+                  <button key={index} onClick={() => handleAnswerClick(answer)}>
                     {decodeURIComponent(answer)}
                   </button>
                 ))}
-                <button
-                  className="correct-choice"
-                  onClick={() =>
-                    handleAnswerClick(questions[currentQuestion].correct_answer)
-                  }
-                >
-                  {decodeURIComponent(
-                    questions[currentQuestion].correct_answer
-                  )}
-                </button>
               </div>
             </div>
           )}
