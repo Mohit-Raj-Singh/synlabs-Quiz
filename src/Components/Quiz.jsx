@@ -34,7 +34,6 @@ const Quiz = () => {
     console.log(questions);
   }, []);
 
-
   const handleAnswerClick = (answer) => {
     if (!showResult) {
       setSelectedAnswer(answer);
@@ -52,7 +51,6 @@ const Quiz = () => {
     setCurrentQuestion((prevQuestion) => prevQuestion + 1);
   };
 
-
   const shuffledAnswers = useMemo(() => {
     return questions && questions.length
       ? [
@@ -60,11 +58,9 @@ const Quiz = () => {
           ...questions[currentQuestion].incorrect_answers,
         ].sort(() => Math.random() - 0.5)
       : [];
-  }, [questions]);
+  }, [questions, currentQuestion]);
 
-
-
-  if (currentQuestion === questions.length) {
+  if (currentQuestion === questions.length - 1) {
     return (
       <div>
         <h1>Quiz</h1>
@@ -77,7 +73,6 @@ const Quiz = () => {
   return (
     <div className="quiz-container">
       {loading ? (
-        // <p>Loading...</p>
         <Loader />
       ) : (
         <div>
